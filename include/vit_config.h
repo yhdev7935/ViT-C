@@ -3,31 +3,30 @@
 #ifndef VIT_CONFIG_H
 #define VIT_CONFIG_H
 
-// --- ViT-Base Configuration ---
-// Reference: "An Image is Worth 16x16 Words" paper, ViT-Base model.
-// These parameters must match the pre-trained model being used.
+// --- PlantVIT Configuration ---
+// Custom lightweight Vision Transformer for tomato disease classification.
+// These parameters match the trained PlantVIT model.
 
 // Image and Patch Dimensions
-#define IMAGE_SIZE 224
+#define IMAGE_SIZE 256
 #define NUM_CHANNELS 3
-#define PATCH_SIZE 16
+#define PATCH_SIZE 32
 
 // Derived Patch Configuration
 #define NUM_PATCHES_PER_DIM (IMAGE_SIZE / PATCH_SIZE)
-#define NUM_PATCHES (NUM_PATCHES_PER_DIM * NUM_PATCHES_PER_DIM) // 14 * 14 = 196
+#define NUM_PATCHES (NUM_PATCHES_PER_DIM * NUM_PATCHES_PER_DIM) // 8 * 8 = 64
 
 // Transformer Core Dimensions
-#define EMBED_DIM 768         // The dimensionality of the patch embeddings (D).
-#define NUM_ENCODER_BLOCKS 12 // Number of Transformer Encoder layers.
-#define NUM_HEADS 12          // Number of attention heads.
-#define HEAD_DIM (EMBED_DIM / NUM_HEADS) // Dimensionality of each attention head.
+#define EMBED_DIM 32          // The dimensionality of the patch embeddings (D).
+#define NUM_ENCODER_BLOCKS 3  // Number of Transformer Encoder layers.
+#define NUM_HEADS 3           // Number of attention heads.
+#define HEAD_DIM 32           // Dimensionality of each attention head (custom for PlantVIT).
 
 // MLP (Feed-Forward) Network Configuration
-#define MLP_RATIO 4
-#define MLP_DIM (EMBED_DIM * MLP_RATIO) // 768 * 4 = 3072
+#define MLP_DIM 16            // Custom MLP dimension for PlantVIT (not using ratio).
 
 // Classification Head
-#define NUM_CLASSES 1000 // For ImageNet-1K
+#define NUM_CLASSES 10        // For tomato disease classification (updated to match saved model)
 
 // Other constants
 #define CLS_TOKEN_SIZE EMBED_DIM

@@ -1,4 +1,4 @@
-# ViT-C: A Pure C Implementation of Vision Transformer
+# PlantVIT-C: A Pure C Implementation of Tomato Disease Classification Vision Transformer
 
 ![C](https://img.shields.io/badge/c-%2300599C.svg?style=for-the-badge&logo=c&logoColor=white)
 ![Makefile](https://img.shields.io/badge/Makefile-000000?style=for-the-badge&logo=makefile&logoColor=white)
@@ -6,42 +6,67 @@
 
 ## Overview
 
-**ViT-C** is a complete, from-scratch implementation of the Vision Transformer (ViT) model in pure C, designed specifically for embedded systems, AI acceleration boards, and educational purposes. This project demonstrates how complex transformer architectures can be implemented without external dependencies, making it ideal for deployment on resource-constrained devices or for understanding the inner workings of modern neural networks.
+**PlantVIT-C** is a complete, from-scratch implementation of **PlantVIT**, a lightweight Vision Transformer specifically designed for tomato disease classification, in pure C. This project is tailored for agricultural IoT devices, embedded systems, and smart farming environments where real-time plant disease diagnosis is crucial. It demonstrates how complex transformer architectures can be implemented without external dependencies, making it ideal for deployment on resource-constrained agricultural devices.
 
-The implementation is compatible with PyTorch's `timm` library weights, ensuring that pre-trained models can be directly used for inference. Every component, from basic linear algebra operations to multi-head self-attention mechanisms, has been implemented from the ground up using only standard C libraries.
+This implementation can classify 9 different tomato disease states using a much lighter and more efficient architecture compared to standard ViT models. Every component, from basic linear algebra operations to multi-head self-attention mechanisms, has been implemented from the ground up using only standard C libraries.
 
 ## Key Features
 
 - **🚀 Zero Dependencies:** Uses only pure C99/C11 and standard libraries (`math.h`, `stdlib.h`, `string.h`)
 - **🔧 Modular Design:** Each neural network layer (Linear, Attention, MLP, LayerNorm) is implemented as an independent, reusable module
-- **🔗 PyTorch Compatible:** Fully compatible with `timm`'s `vit_base_patch16_224` model weights and architecture
+- **🌱 Agriculture-Focused:** Lightweight PlantVIT architecture optimized for tomato disease classification
 - **💻 Portable:** Compiles on all major platforms using standard `gcc` and `Makefile`
 - **📖 Well-Documented:** Every function and structure includes comprehensive Doxygen-style documentation
-- **⚡ Memory Efficient:** Optimized memory usage patterns suitable for embedded deployment
+- **⚡ Memory Efficient:** Optimized memory usage patterns with 32-dimensional embeddings, suitable for embedded deployment
 - **🏗️ Cache-Friendly:** Row-major matrix operations optimized for modern CPU cache hierarchies
+
+## 🌿 PlantVIT Model Specifications
+
+PlantVIT is a lightweight Vision Transformer designed for real-time diagnosis in agricultural environments:
+
+- **Image Size:** 256×256×3
+- **Patch Size:** 32×32 (total of 64 patches)
+- **Embedding Dimension:** 32 (drastically reduced from standard ViT's 768)
+- **Encoder Blocks:** 3 (reduced from standard ViT's 12)
+- **Attention Heads:** 3
+- **Head Dimension:** 32
+- **MLP Dimension:** 16
+- **Classification Classes:** 9 tomato disease states
+
+### Tomato Disease Classification Classes
+
+1. **Bacterial_spot** - Bacterial spot disease
+2. **Early_blight** - Early blight disease
+3. **Late_blight** - Late blight disease
+4. **Leaf_mold** - Leaf mold disease
+5. **Septoria_leaf_spot** - Septoria leaf spot disease
+6. **Spider_mites** - Spider mites infestation
+7. **Target_spot** - Target spot disease
+8. **Yellow_leaf_curl_virus** - Yellow leaf curl virus
+9. **Healthy** - Healthy tomato plant
 
 ## Project Structure
 
 ```
-ViT-C/
+PlantVIT-C/
 ├── include/                    # Header files for all modules
 │   ├── attention.h             # Multi-Head Self-Attention declarations
 │   ├── layernorm.h             # Layer Normalization declarations
 │   ├── linear.h                # Linear transformation declarations
 │   ├── mlp.h                   # Feed-Forward Network declarations
-│   ├── vit_config.h            # Model configuration constants
+│   ├── vit_config.h            # PlantVIT model configuration constants
 │   ├── vit_math.h              # Mathematical utility functions
-│   └── vit.h                   # Complete ViT model structure
+│   └── vit.h                   # Complete PlantVIT model structure
 ├── src/                        # Source implementations
-│   ├── attention.c             # MHSA implementation (Multi-head processing)
+│   ├── attention.c             # MHSA implementation (3-head processing)
 │   ├── layernorm.c             # Layer normalization with numerical stability
 │   ├── linear.c                # Optimized matrix-vector multiplication
-│   ├── main.c                  # Main executable and demo program
+│   ├── main.c                  # Main executable with complete weight loading
 │   ├── mlp.c                   # MLP block with GELU activation
 │   ├── vit_math.c              # Core mathematical operations
-│   └── vit.c                   # Complete ViT forward pass orchestration
+│   └── vit.c                   # Complete PlantVIT forward pass with patch embedding
 ├── utils/                      # Utility scripts
-│   └── export_weights.py       # PyTorch weight extraction to binary format
+│   └── export_weights.py       # PlantVIT weight extraction to binary format
 ├── Makefile                    # Build system with optimization flags
 └── README.md                   # This documentation
 ```
@@ -56,18 +81,18 @@ Ensure you have the following tools installed:
 - **Build System:** `make` utility
 - **Python Environment:** `python3` with the following packages:
   ```bash
-  pip install torch torchvision timm numpy
+  pip install torch torchvision einops numpy
   ```
 
 ### Step 1: Generate Weights
 
-Extract pre-trained ViT weights from PyTorch and convert them to binary format:
+Extract PlantVIT model weights and convert them to binary format:
 
 ```bash
 python3 utils/export_weights.py
 ```
 
-This will download the `vit_base_patch16_224` model from `timm` and create a `vit_weights.bin` file containing all model parameters in the exact order expected by the C implementation.
+This will create the PlantVIT model structure and (if available, load from `plantvit_tomato.pth`) create a `vit_weights.bin` file containing all model parameters in the exact order expected by the C implementation.
 
 ### Step 2: Compile the Project
 
@@ -90,17 +115,35 @@ Execute the compiled program:
 **Expected Output:**
 
 ```
---- Pure C Vision Transformer Inference ---
-Skipping weight loading for this demonstration.
-The model structure is ready, but weights are not loaded.
-Running forward pass with dummy data (expecting garbage output without weights)...
-Forward pass completed (simulation).
-NOTE: The actual vit_forward call is commented out because weights are not loaded.
-To make this fully functional, you must implement the full load_weights function.
-Example logits (first 10):
-  logit[0] = 0.000000
+--- PlantVIT Pure C Inference ---
+Image Size: 256x256, Patch Size: 32x32, Classes: 9
+Embed Dim: 32, Blocks: 3, Heads: 3, MLP Dim: 16
+Allocating model buffers...
+Model buffers allocated successfully!
+Loading PlantVIT weights from vit_weights.bin...
+--- Loading Patch Embedding ---
+  - Loaded patch_ln1_w: 3072 elements
+  - Loaded patch_ln1_b: 3072 elements
   ...
-Project structure is complete. Implement the weight loader to run real inference.
+Weight loading completed successfully!
+
+Running PlantVIT forward pass...
+Forward pass completed successfully!
+
+Tomato Disease Classification Results:
+  Bacterial_spot: 0.106876
+  Early_blight: -0.151543
+  Late_blight: -0.025076
+  Leaf_mold: 0.136157
+  Septoria_leaf_spot: 0.111755
+  Spider_mites: -0.091206
+  Target_spot: -0.002325
+  Yellow_leaf_curl_virus: 0.002382
+  Healthy: 0.013054
+
+Predicted Disease: Leaf_mold (confidence: 0.136157)
+
+PlantVIT inference completed successfully!
 ```
 
 ### Additional Build Commands
@@ -112,29 +155,30 @@ make clean  # Remove all build artifacts
 
 ## Architecture Overview
 
-The ViT-C implementation follows the standard Vision Transformer architecture:
+The PlantVIT-C implementation follows a lightweight Vision Transformer architecture:
 
-1. **Patch Embedding:** Divides input images (224×224×3) into 16×16 patches, creating 196 patch tokens
+1. **Patch Embedding:** Divides input images (256×256×3) into 32×32 patches, creating 64 patch tokens
+   - **Special Structure:** LayerNorm → Linear → LayerNorm (different from standard ViT)
 2. **Position Embedding:** Adds learnable positional encodings to patch embeddings
-3. **Transformer Encoder:** 12 identical blocks, each containing:
-   - **Multi-Head Self-Attention (MHSA):** 12 attention heads with 64-dimensional head space
+3. **Transformer Encoder:** 3 identical blocks, each containing:
+   - **Multi-Head Self-Attention (MHSA):** 3 attention heads with 32-dimensional head space
    - **Layer Normalization:** Applied before each sub-layer (Pre-LN architecture)
-   - **MLP Block:** Feed-forward network with GELU activation (768→3072→768)
+   - **MLP Block:** Feed-forward network with GELU activation (32→16→32)
    - **Residual Connections:** Skip connections around each sub-layer
-4. **Classification Head:** Final layer normalization + linear projection to 1000 classes (ImageNet)
+4. **Classification Head:** Final layer normalization + linear projection to 9 classes (tomato diseases)
 
 ### Data Flow
 
 ```
-Input Image (3×224×224)
-    ↓ Patch Embedding
-Patches (196×768) + CLS Token (1×768) + Position Embeddings
-    ↓ 12× Transformer Encoder Blocks
+Input Image (3×256×256)
+    ↓ Patch Embedding (LayerNorm → Linear → LayerNorm)
+Patches (64×32) + CLS Token (1×32) + Position Embeddings
+    ↓ 3× Transformer Encoder Blocks
     ↓ [LayerNorm → MHSA → Add] → [LayerNorm → MLP → Add]
-Feature Representation (197×768)
+Feature Representation (65×32)
     ↓ Extract CLS Token + Final LayerNorm
     ↓ Classification Head
-Logits (1000 classes)
+Logits (9 tomato disease classes)
 ```
 
 ## Implementation Details
@@ -142,7 +186,7 @@ Logits (1000 classes)
 ### Memory Management
 
 - **Static Allocation Preferred:** Most buffers use stack allocation for embedded compatibility
-- **Minimal Dynamic Allocation:** Only the attention module uses `malloc` (marked for future optimization)
+- **Complete Dynamic Allocation:** Full memory management implementation for all weights and buffers
 - **Pre-allocated Buffers:** The `ViTModel` structure includes intermediate buffers to avoid allocation during inference
 
 ### Numerical Stability
@@ -156,48 +200,59 @@ Logits (1000 classes)
 - **Cache-Friendly Access:** Row-major matrix operations with sequential memory access
 - **Compiler Optimizations:** `-O2` flag enables vectorization and loop optimizations
 - **Modular Design:** Each component can be individually optimized or replaced
+- **Lightweight Architecture:** 32-dimensional embeddings significantly reduce memory usage
 
-## Current Limitations & Future Work
+## Key Implementation Features
 
-### To-Do Items
+### Fully Implemented Components
 
 1. **Complete Weight Loading:**
 
-   - Implement full `load_weights()` function in `src/main.c`
-   - Add proper memory allocation for each weight tensor
-   - Ensure binary file reading matches the export order
+   - Full `load_weights()` function implementation in `src/main.c`
+   - Proper memory allocation for each weight tensor
+   - Binary file reading perfectly matched to export order
 
-2. **Image Preprocessing:**
+2. **Advanced Patch Embedding:**
 
-   - Implement actual patch extraction from raw images
-   - Add image normalization (ImageNet mean/std)
-   - Support different input formats (RGB, BGR, etc.)
+   - LayerNorm → Linear → LayerNorm structure implementation
+   - Complete patch extraction from raw images
+   - Optimized for agricultural image processing
 
-3. **Performance Optimizations:**
+3. **Agricultural-Specific Features:**
+   - Tomato disease classification with confidence scores
+   - Disease name mapping and result interpretation
+   - Optimized for real-time agricultural diagnostics
 
-   - **SIMD Instructions:** Vectorize matrix operations using ARM NEON or x86 SSE
-   - **Multi-threading:** Parallelize attention heads using OpenMP
-   - **Quantization:** Support INT8 inference for faster embedded deployment
-   - **Memory Pool:** Replace `malloc` with pre-allocated memory pools
+## Future Development Plans
 
-4. **Extended Model Support:**
-   - ViT-Large (24 blocks, 1024 dimensions)
-   - ViT-Huge (32 blocks, 1280 dimensions)
-   - DeiT variants with distillation tokens
+### Performance Optimizations
 
-### Known Issues
+1. **SIMD Instructions:** Vectorize matrix operations using ARM NEON or x86 SSE
+2. **Multi-threading:** Parallelize attention heads using OpenMP
+3. **Quantization:** Support INT8 inference for faster embedded deployment
+4. **Memory Pool:** Replace `malloc` with pre-allocated memory pools
 
-- The `load_weights()` function is currently a placeholder
-- Patch extraction logic needs robust implementation
-- Some compiler warnings for unused variables in placeholder code
+### Agriculture-Specific Features
+
+1. **Real-time Image Processing:** Direct inference from camera inputs
+2. **Multi-crop Support:** Extend to other plant disease classification models
+3. **Environmental Data Integration:** Combine with temperature, humidity, and other environmental data
+4. **IoT Integration:** Support for MQTT, LoRa, and other IoT protocols
+
+### Model Extensions
+
+1. **Extended Disease Classes:** Additional tomato diseases and pest classifications
+2. **Multi-crop Models:** Disease diagnosis for crops other than tomatoes
+3. **Severity Assessment:** Evaluate disease progression stages and severity levels
+4. **Preventive Recommendations:** AI-driven treatment and prevention suggestions
 
 ## Contributing
 
 Contributions are welcome! Please feel free to:
 
-- Implement missing functionality (weight loading, patch extraction)
 - Add performance optimizations
-- Extend support for other ViT variants
+- Develop new agriculture-specific features
+- Extend support for other crops
 - Improve documentation and examples
 - Add comprehensive test suites
 
@@ -209,9 +264,9 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 - **Attention Is All You Need:** Vaswani et al. (2017) - The original Transformer paper
 - **An Image is Worth 16x16 Words:** Dosovitskiy et al. (2020) - The Vision Transformer paper
-- **timm Library:** Ross Wightman's excellent PyTorch Image Models library
+- **Agricultural AI Community:** For advancing smart farming technologies
 - **Embedded AI Community:** For inspiring deployment-focused ML implementations
 
 ---
 
-**Note:** This implementation prioritizes educational value and embedded deployment over raw performance. For production use with large-scale inference, consider PyTorch or TensorRT implementations.
+**Note:** This implementation prioritizes practical agricultural applications and educational value. PlantVIT's lightweight architecture is specifically designed for real-time disease diagnosis on embedded systems and IoT devices in farming environments.

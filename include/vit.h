@@ -17,11 +17,17 @@ typedef struct {
     float* ln2_bias;    // Shape: (EMBED_DIM)
 } EncoderBlock;
 
-// Structure to hold all weights for the ViT model
+// Structure to hold all weights for the PlantVIT model
 typedef struct {
-    // Patch + Position Embedding
-    float* patch_embed_weights; // Shape: (EMBED_DIM, NUM_CHANNELS * PATCH_SIZE * PATCH_SIZE)
-    float* patch_embed_bias;    // Shape: (EMBED_DIM)
+    // Patch Embedding (LayerNorm -> Linear -> LayerNorm structure)
+    float* patch_ln1_w;         // Shape: (NUM_CHANNELS * PATCH_SIZE * PATCH_SIZE)
+    float* patch_ln1_b;         // Shape: (NUM_CHANNELS * PATCH_SIZE * PATCH_SIZE)
+    float* patch_linear_w;      // Shape: (EMBED_DIM, NUM_CHANNELS * PATCH_SIZE * PATCH_SIZE)
+    float* patch_linear_b;      // Shape: (EMBED_DIM)
+    float* patch_ln2_w;         // Shape: (EMBED_DIM)
+    float* patch_ln2_b;         // Shape: (EMBED_DIM)
+
+    // Position Embedding and CLS token
     float* pos_embed;           // Shape: (NUM_PATCHES + 1, EMBED_DIM)
     float* cls_token;           // Shape: (1, EMBED_DIM)
 
@@ -47,7 +53,7 @@ typedef struct {
 } ViTModel;
 
 /**
- * @brief Performs the full forward pass of the Vision Transformer.
+ * @brief Performs the full forward pass of the PlantVIT model.
  * 
  * @param model A pointer to the ViTModel struct containing weights and buffers.
  * @param image Input image tensor of shape (NUM_CHANNELS, IMAGE_SIZE, IMAGE_SIZE).
