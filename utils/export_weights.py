@@ -180,11 +180,13 @@ def export_weights():
             write_tensor(f'transformer.layers.{i}.1.net.4.weight')   # mlp fc2 weight
             write_tensor(f'transformer.layers.{i}.1.net.4.bias')     # mlp fc2 bias
             
-            # Layer Norms - using actual saved structure
-            write_tensor(f'transformer.layers.{i}.0.norm.weight')    # ln1_weights (attention norm)
-            write_tensor(f'transformer.layers.{i}.0.norm.bias')      # ln1_bias (attention norm)
-            write_tensor(f'transformer.layers.{i}.1.net.0.weight')   # ln2_weights (mlp norm)
-            write_tensor(f'transformer.layers.{i}.1.net.0.bias')     # ln2_bias (mlp norm)
+            # Layer Norms - CORRECTED MAPPING!
+            # ln1 is actually inside attention (Pre-LN)
+            write_tensor(f'transformer.layers.{i}.0.norm.weight')    # ln1_weights (attention internal norm)
+            write_tensor(f'transformer.layers.{i}.0.norm.bias')      # ln1_bias (attention internal norm)
+            # ln2 is actually inside MLP 
+            write_tensor(f'transformer.layers.{i}.1.net.0.weight')   # ln2_weights (MLP internal norm)
+            write_tensor(f'transformer.layers.{i}.1.net.0.bias')     # ln2_bias (MLP internal norm)
 
         # 4. Final Layer Norm and Classification Head
         print("--- Final Layers ---")

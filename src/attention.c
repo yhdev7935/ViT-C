@@ -2,6 +2,7 @@
 
 #include "attention.h"
 #include "linear.h"
+#include "layernorm.h"
 #include "vit_math.h"
 #include <stdlib.h> // For malloc/free. Note: In a real embedded system, use static buffers.
 #include <string.h> // For memcpy
@@ -14,6 +15,7 @@ void attention_forward(const float* x, const AttentionWeights* weights, float* y
     // --- Temporary Buffers ---
     // In a production-grade embedded system, these should be statically allocated
     // and passed as arguments to avoid dynamic memory allocation during inference.
+    float* norm_output = (float*)malloc(num_tokens * EMBED_DIM * sizeof(float));
     float* qkv_buffer = (float*)malloc(num_tokens * qkv_dim * sizeof(float));
     float* q_buffer = (float*)malloc(num_tokens * EMBED_DIM * sizeof(float));
     float* k_buffer = (float*)malloc(num_tokens * EMBED_DIM * sizeof(float));
@@ -21,10 +23,16 @@ void attention_forward(const float* x, const AttentionWeights* weights, float* y
     float* attn_scores = (float*)malloc(NUM_HEADS * num_tokens * num_tokens * sizeof(float));
     float* attn_output_buffer = (float*)malloc(num_tokens * EMBED_DIM * sizeof(float));
 
+    // 0. Apply LayerNorm first (Pre-LN structure, matches notebook)
+    for (int i = 0; i < num_tokens; ++i) {
+        layernorm(&x[i * EMBED_DIM], weights->norm_weights, weights->norm_bias, 
+                  &norm_output[i * EMBED_DIM], EMBED_DIM, 1e-6f);
+    }
+
     // 1. Calculate Q, K, V for all tokens in a single batch operation
     // For each token, apply the linear transformation to get Q, K, V
     for (int i = 0; i < num_tokens; ++i) {
-        const float* token_input = &x[i * EMBED_DIM];
+        const float* token_input = &norm_output[i * EMBED_DIM];  // Use normalized input
         float* token_output = &qkv_buffer[i * qkv_dim];
         linear(token_input, weights->qkv_weights, weights->qkv_bias, token_output, EMBED_DIM, qkv_dim);
     }
@@ -93,6 +101,7 @@ void attention_forward(const float* x, const AttentionWeights* weights, float* y
     }
 
     // --- Free Buffers ---
+    free(norm_output);
     free(qkv_buffer);
     free(q_buffer);
     free(k_buffer);

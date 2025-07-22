@@ -7,6 +7,10 @@
 
 // Structure to hold the weights and biases for the MLP block
 typedef struct {
+    // Internal LayerNorm - matches notebook structure  
+    float* norm_weights; // Shape: (EMBED_DIM)
+    float* norm_bias;    // Shape: (EMBED_DIM)
+    
     float* fc1_weights; // Shape: (MLP_DIM, EMBED_DIM)
     float* fc1_bias;    // Shape: (MLP_DIM)
     float* fc2_weights; // Shape: (EMBED_DIM, MLP_DIM)

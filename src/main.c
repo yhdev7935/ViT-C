@@ -49,13 +49,20 @@ void resize_image(unsigned char* input, int input_w, int input_h, int channels,
 }
 
 // Convert HWC format to CHW format and normalize to [0,1]
+// Also convert RGB to BGR to match OpenCV/notebook preprocessing
 void convert_hwc_to_chw_and_normalize(unsigned char* hwc_data, float* chw_data, 
                                       int width, int height, int channels) {
     for (int c = 0; c < channels; c++) {
         for (int h = 0; h < height; h++) {
             for (int w = 0; w < width; w++) {
                 int hwc_idx = (h * width + w) * channels + c;
-                int chw_idx = c * width * height + h * width + w;
+                // Convert RGB to BGR to match OpenCV (notebook uses cv2.imread which loads as BGR)
+                int bgr_channel = c;
+                if (c == 0) bgr_channel = 2; // R → B
+                else if (c == 2) bgr_channel = 0; // B → R
+                // G stays at 1
+                
+                int chw_idx = bgr_channel * width * height + h * width + w;
                 chw_data[chw_idx] = (float)hwc_data[hwc_idx] / 255.0f;
             }
         }
@@ -154,11 +161,11 @@ void load_weights(ViTModel* model, const char* filename) {
         read_tensor(fp, &block->mlp_weights.fc2_weights, EMBED_DIM * MLP_DIM, "mlp_fc2_weights");
         read_tensor(fp, &block->mlp_weights.fc2_bias, EMBED_DIM, "mlp_fc2_bias");
         
-        // Layer Norms
-        read_tensor(fp, &block->ln1_weights, EMBED_DIM, "ln1_weights");
-        read_tensor(fp, &block->ln1_bias, EMBED_DIM, "ln1_bias");
-        read_tensor(fp, &block->ln2_weights, EMBED_DIM, "ln2_weights");
-        read_tensor(fp, &block->ln2_bias, EMBED_DIM, "ln2_bias");
+        // Layer Norms - now inside attention and MLP structures
+        read_tensor(fp, &block->attention_weights.norm_weights, EMBED_DIM, "attention_norm_weights");
+        read_tensor(fp, &block->attention_weights.norm_bias, EMBED_DIM, "attention_norm_bias");
+        read_tensor(fp, &block->mlp_weights.norm_weights, EMBED_DIM, "mlp_norm_weights");
+        read_tensor(fp, &block->mlp_weights.norm_bias, EMBED_DIM, "mlp_norm_bias");
     }
     
     // 4. Final Layer Norm and Classification Head
@@ -215,10 +222,10 @@ void free_model(ViTModel* model) {
         free(block->mlp_weights.fc1_bias);
         free(block->mlp_weights.fc2_weights);
         free(block->mlp_weights.fc2_bias);
-        free(block->ln1_weights);
-        free(block->ln1_bias);
-        free(block->ln2_weights);
-        free(block->ln2_bias);
+        free(block->attention_weights.norm_weights);
+        free(block->attention_weights.norm_bias);
+        free(block->mlp_weights.norm_weights);
+        free(block->mlp_weights.norm_bias);
     }
     
     // Free final layers
@@ -285,9 +292,16 @@ int main(int argc, char* argv[]) {
     // Print all logits for tomato disease classification
     printf("\n=== Tomato Disease Classification Results ===\n");
     const char* disease_names[] = {
-        "Bacterial_spot", "Early_blight", "Late_blight", "Leaf_mold",
-        "Septoria_leaf_spot", "Spider_mites", "Target_spot", 
-        "Yellow_leaf_curl_virus", "Healthy", "Unknown_disease"
+        "Bacterial_spot",           // 0
+        "Early_blight",             // 1
+        "Healthy",                  // 2 ← 수정!
+        "Late_blight",              // 3
+        "Leaf_mold",                // 4 ← 이제 올바른 위치!
+        "Septoria_leaf_spot",       // 5
+        "Spider_mites",             // 6
+        "Target_spot",              // 7
+        "Tomato_mosaic_virus",      // 8
+        "Yellow_leaf_curl_virus"    // 9
     };
     
     for (int i = 0; i < NUM_CLASSES; ++i) {
@@ -309,7 +323,7 @@ int main(int argc, char* argv[]) {
     printf("Confidence Score: %.6f\n", max_logit);
     
     // Provide interpretation
-    if (predicted_class == 8) { // Healthy
+    if (predicted_class == 2) { // Healthy
         printf("✅ Good news! The tomato plant appears to be healthy.\n");
     } else {
         printf("⚠️  Disease detected! Consider appropriate treatment measures.\n");

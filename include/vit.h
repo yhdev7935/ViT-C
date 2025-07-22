@@ -11,10 +11,7 @@
 typedef struct {
     AttentionWeights attention_weights;
     MLPWeights mlp_weights;
-    float* ln1_weights; // Shape: (EMBED_DIM)
-    float* ln1_bias;    // Shape: (EMBED_DIM)
-    float* ln2_weights; // Shape: (EMBED_DIM)
-    float* ln2_bias;    // Shape: (EMBED_DIM)
+    // LayerNorm weights are now inside AttentionWeights and MLPWeights
 } EncoderBlock;
 
 // Structure to hold all weights for the PlantVIT model

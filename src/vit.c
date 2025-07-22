@@ -10,35 +10,25 @@
 static void encoder_block_forward(EncoderBlock* block, float* x) {
     const int num_tokens = NUM_PATCHES + 1;
     float residual[num_tokens * EMBED_DIM];
-    memcpy(residual, x, num_tokens * EMBED_DIM * sizeof(float));
-
-    // 1. Layer Norm 1 -> Multi-Head Attention
-    float ln1_output[num_tokens * EMBED_DIM];
-    for (int i = 0; i < num_tokens; ++i) {
-        layernorm(&x[i * EMBED_DIM], block->ln1_weights, block->ln1_bias, &ln1_output[i * EMBED_DIM], EMBED_DIM, 1e-6f);
-    }
     
+    // 1. Attention with internal LayerNorm (Pre-LN)
+    // attention_forward now handles LayerNorm internally
     float attn_output[num_tokens * EMBED_DIM];
-    // Note: The provided attention_forward uses malloc. For production, pass in buffers.
-    attention_forward(ln1_output, &block->attention_weights, attn_output);
+    attention_forward(x, &block->attention_weights, attn_output);
 
-    // 2. Add & Norm (Residual Connection 1)
+    // 2. Residual Connection 1
     add(x, attn_output, num_tokens * EMBED_DIM);
     memcpy(residual, x, num_tokens * EMBED_DIM * sizeof(float));
 
-    // 3. Layer Norm 2 -> MLP
-    float ln2_output[num_tokens * EMBED_DIM];
-    for (int i = 0; i < num_tokens; ++i) {
-        layernorm(&x[i * EMBED_DIM], block->ln2_weights, block->ln2_bias, &ln2_output[i * EMBED_DIM], EMBED_DIM, 1e-6f);
-    }
-
+    // 3. MLP with internal LayerNorm
+    // mlp_forward now handles LayerNorm internally  
     float mlp_output[num_tokens * EMBED_DIM];
     float mlp_intermediate_buffer[MLP_DIM];
     for (int i = 0; i < num_tokens; ++i) {
-        mlp_forward(&ln2_output[i * EMBED_DIM], &block->mlp_weights, &mlp_output[i * EMBED_DIM], mlp_intermediate_buffer);
+        mlp_forward(&x[i * EMBED_DIM], &block->mlp_weights, &mlp_output[i * EMBED_DIM], mlp_intermediate_buffer);
     }
 
-    // 4. Add & Norm (Residual Connection 2)
+    // 4. Residual Connection 2
     add(x, mlp_output, num_tokens * EMBED_DIM);
 }
 
@@ -51,14 +41,15 @@ void vit_forward(ViTModel* model, const float* image, float* logits) {
         int row = i / NUM_PATCHES_PER_DIM;
         int col = i % NUM_PATCHES_PER_DIM;
         
-        // Extract the current patch (simplified - assumes image is in HWC format)
+        // Extract the current patch following notebook's WHC order (transpose CHW → WHC)
         float patch_buffer[patch_dim];
-        for (int c = 0; c < NUM_CHANNELS; ++c) {
-            for (int h = 0; h < PATCH_SIZE; ++h) {
-                for (int w = 0; w < PATCH_SIZE; ++w) {
+        for (int h = 0; h < PATCH_SIZE; ++h) {
+            for (int w = 0; w < PATCH_SIZE; ++w) {
+                for (int c = 0; c < NUM_CHANNELS; ++c) {
                     int img_h = row * PATCH_SIZE + h;
                     int img_w = col * PATCH_SIZE + w;
-                    int patch_idx = c * PATCH_SIZE * PATCH_SIZE + h * PATCH_SIZE + w;
+                    // WHC order: width-height-channel order like notebook
+                    int patch_idx = h * PATCH_SIZE * NUM_CHANNELS + w * NUM_CHANNELS + c;
                     int img_idx = c * IMAGE_SIZE * IMAGE_SIZE + img_h * IMAGE_SIZE + img_w;
                     patch_buffer[patch_idx] = image[img_idx];
                 }

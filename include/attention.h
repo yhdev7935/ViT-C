@@ -7,6 +7,10 @@
 
 // Structure to hold the weights and biases for the Multi-Head Self-Attention block
 typedef struct {
+    // Internal LayerNorm (Pre-LN) - matches notebook structure
+    float* norm_weights; // Shape: (EMBED_DIM)
+    float* norm_bias;    // Shape: (EMBED_DIM)
+    
     // For creating Q, K, V from input tokens
     float* qkv_weights; // Shape: (3 * EMBED_DIM, EMBED_DIM)
     float* qkv_bias;    // Shape: (3 * EMBED_DIM)
