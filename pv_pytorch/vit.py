@@ -184,7 +184,7 @@ class PlantVIT(nn.Module):
     def to_patches(self, images):
         n, c, h, w = images.shape
         transposed = torch.transpose(images, 2, 3)
-        transposed = torch.transpose(images, 1, 3)
+        transposed = torch.transpose(transposed, 1, 3)
         #end result should be n, h, w, c
 
         patches = torch.reshape(transposed, (n, h*w // self.patch_area, self.patch_area * c))
