@@ -151,8 +151,8 @@ void load_weights(ViTModel* model, const char* filename) {
         
         // Attention weights
         read_tensor(fp, &block->attention_weights.qkv_weights, 3 * NUM_HEADS * HEAD_DIM * EMBED_DIM, "qkv_weights");
-        read_tensor(fp, &block->attention_weights.qkv_bias, 3 * NUM_HEADS * HEAD_DIM, "qkv_bias");
-        read_tensor(fp, &block->attention_weights.proj_weights, EMBED_DIM * EMBED_DIM, "proj_weights");
+        read_tensor(fp, &block->attention_weights.qkv_bias, 3 * EMBED_DIM, "qkv_bias");
+        read_tensor(fp, &block->attention_weights.proj_weights, 32 * 96, "proj_weights");
         read_tensor(fp, &block->attention_weights.proj_bias, EMBED_DIM, "proj_bias");
         
         // MLP weights

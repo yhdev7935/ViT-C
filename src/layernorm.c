@@ -2,6 +2,7 @@
 
 #include "layernorm.h"
 #include <math.h>
+#include <stdio.h>
 
 void layernorm(const float* x, const float* weight, const float* bias,
                float* y, int dim, float eps) {
@@ -19,6 +20,14 @@ void layernorm(const float* x, const float* weight, const float* bias,
         variance += diff * diff;
     }
     variance /= dim;
+
+    // Debug output for first call only (CLS token)
+    static int call_count = 0;
+    if (call_count == 0 && dim == 32) {
+        printf("        LayerNorm debug: mean=%.6f, variance=%.6f, eps=%.8f\n", mean, variance, eps);
+        printf("        sqrt(variance + eps)=%.6f, inv_stddev=%.6f\n", sqrtf(variance + eps), 1.0f / sqrtf(variance + eps));
+        call_count++;
+    }
 
     // 3. Normalize and apply scale/shift
     const float inv_stddev = 1.0f / sqrtf(variance + eps);
