@@ -294,9 +294,9 @@ int main(int argc, char* argv[]) {
     const char* disease_names[] = {
         "Bacterial_spot",           // 0
         "Early_blight",             // 1
-        "Healthy",                  // 2 ← 수정!
+        "Healthy",                  // 2 - Fixed!
         "Late_blight",              // 3
-        "Leaf_mold",                // 4 ← 이제 올바른 위치!
+        "Leaf_mold",                // 4 - Now in correct position!
         "Septoria_leaf_spot",       // 5
         "Spider_mites",             // 6
         "Target_spot",              // 7

@@ -126,7 +126,7 @@ void vit_forward(ViTModel* model, const float* image, float* logits) {
     printf("Patches shape: [1, %d, %d]\n", NUM_PATCHES, patch_dim);
     print_debug_info("First patch", all_patches, patch_dim, 10);
     
-    // === STEP 2: 패치 임베딩 ===
+    // === STEP 2: Patch embedding ===
     printf("\n--- STEP 2: Patch Embedding ---\n");
     
     for (int patch_idx = 0; patch_idx < NUM_PATCHES; ++patch_idx) {
@@ -161,7 +161,7 @@ void vit_forward(ViTModel* model, const float* image, float* logits) {
     free(transposed_hwc);
     free(all_patches);
 
-    // === STEP 3: CLS 토큰 추가 ===
+    // === STEP 3: Add CLS token ===
     printf("\n--- STEP 3: Add CLS Token ---\n");
     float* tokens = model->token_buffer;
     memcpy(tokens, model->weights.cls_token, EMBED_DIM * sizeof(float));
@@ -170,7 +170,7 @@ void vit_forward(ViTModel* model, const float* image, float* logits) {
     printf("After CLS token shape: [1, %d, %d]\n", NUM_PATCHES + 1, EMBED_DIM);
     print_debug_info("CLS token", tokens, EMBED_DIM, 10);
     
-    // === STEP 4: Position Embedding 추가 ===
+    // === STEP 4: Add position embeddings ===
     printf("\n--- STEP 4: Add Position Embedding ---\n");
     add(tokens, model->weights.pos_embed, (NUM_PATCHES + 1) * EMBED_DIM);
     
@@ -192,7 +192,7 @@ void vit_forward(ViTModel* model, const float* image, float* logits) {
     
     print_debug_info("After final norm: CLS", final_norm_output, EMBED_DIM, 10);
     
-    // === STEP 7: 최종 분류 헤드 ===
+    // === STEP 7: Final classification head ===
     printf("\n--- STEP 7: Classification Head ---\n");
     linear(final_norm_output, model->weights.head_weights, model->weights.head_bias, logits, EMBED_DIM, NUM_CLASSES);
     

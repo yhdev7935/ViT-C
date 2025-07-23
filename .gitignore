@@ -1,4 +1,4 @@
-# C/C++ 컴파일된 파일들
+# C/C++ compiled files
 *.o
 *.obj
 *.elf
@@ -6,60 +6,60 @@
 *.out
 *.app
 
-# 실행 파일
+# Executable files
 vit_inference
 
-# 라이브러리 파일
+# Library files
 *.a
 *.lib
 *.so
 *.so.*
 *.dylib
 
-# 디버그 파일
+# Debug files
 *.dSYM/
 *.su
 *.idb
 *.pdb
 
-# 임시 파일
+# Temporary files
 *~
 *.tmp
 *.temp
 
-# IDE 관련 파일
+# IDE related files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# macOS 관련
+# macOS related
 .DS_Store
 .AppleDouble
 .LSOverride
 
-# 로그 파일
+# Log files
 *.log
 
-# 백업 파일
+# Backup files
 *.bak
 *.backup
 
-# Python 관련 (utils 폴더용)
+# Python related (for utils folder)
 __pycache__/
 *.py[cod]
 *$py.class
 *.egg-info/
 .pytest_cache/
 
-# 가중치 파일 (큰 파일이므로 별도 관리)
+# Weight files (large files managed separately)
 *.bin
 *.pth
 *.h5
 *.ckpt
 
-# 테스트 이미지들은 포함 (상대적으로 작음)
+# Test images are included (relatively small)
 # *.jpg
 # *.jpeg
 # *.png 

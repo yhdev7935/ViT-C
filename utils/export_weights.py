@@ -24,7 +24,7 @@ def export_weights():
         print("Error: 'plantvit_tomato.pth' not found.")
         return
     
-    # PlantVIT 모델 설정 (저장된 모델과 일치)
+    # PlantVIT model configuration (matches saved model)
     config = {
         'image_shape': (3, 256, 256),
         'patch_shape': (32, 32),
@@ -38,7 +38,7 @@ def export_weights():
         'emb_dropout': 0.0
     }
     
-    # 모델 생성 (저장된 구조와 일치)
+    # Create model (matches saved structure)
     model = PlantVIT(
         image_shape=config['image_shape'],
         patch_shape=config['patch_shape'],
@@ -52,7 +52,7 @@ def export_weights():
         emb_dropout=config['emb_dropout']
     )
     
-    # 가중치 로드
+    # Load weights
     model.load_state_dict(checkpoint)
     model.eval()
     

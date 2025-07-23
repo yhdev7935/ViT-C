@@ -21,16 +21,16 @@ void print_attention_debug(const char* name, const float* data, int print_count)
 
 void attention_forward(const float* x, const AttentionWeights* weights, float* y) {
     const int num_tokens = NUM_PATCHES + 1;
-    const int qkv_dim = 3 * EMBED_DIM;
+    const int qkv_dim = 3 * NUM_HEADS * HEAD_DIM; // 3 * 3 * 32 = 288
 
     // --- Temporary Buffers ---
     // In a production-grade embedded system, these should be statically allocated
     // and passed as arguments to avoid dynamic memory allocation during inference.
     float* norm_output = (float*)malloc(num_tokens * EMBED_DIM * sizeof(float));
     float* qkv_buffer = (float*)malloc(num_tokens * qkv_dim * sizeof(float));
-    float* q_buffer = (float*)malloc(num_tokens * EMBED_DIM * sizeof(float));
-    float* k_buffer = (float*)malloc(num_tokens * EMBED_DIM * sizeof(float));
-    float* v_buffer = (float*)malloc(num_tokens * EMBED_DIM * sizeof(float));
+    float* q_buffer = (float*)malloc(num_tokens * NUM_HEADS * HEAD_DIM * sizeof(float));
+    float* k_buffer = (float*)malloc(num_tokens * NUM_HEADS * HEAD_DIM * sizeof(float));
+    float* v_buffer = (float*)malloc(num_tokens * NUM_HEADS * HEAD_DIM * sizeof(float));
     float* attn_scores = (float*)malloc(NUM_HEADS * num_tokens * num_tokens * sizeof(float));
     float* attn_output_buffer = (float*)malloc(num_tokens * EMBED_DIM * sizeof(float));
 
@@ -78,12 +78,12 @@ void attention_forward(const float* x, const AttentionWeights* weights, float* y
     // Python uses chunk(3, dim=-1): simple consecutive split [0:32], [32:64], [64:96]
     for (int i = 0; i < num_tokens; ++i) {
         const float* src = &qkv_buffer[i * qkv_dim];
-        float* q_dst = &q_buffer[i * EMBED_DIM];
-        float* k_dst = &k_buffer[i * EMBED_DIM];
-        float* v_dst = &v_buffer[i * EMBED_DIM];
-        memcpy(q_dst, src, EMBED_DIM * sizeof(float));                 // Q: [0:32]
-        memcpy(k_dst, src + EMBED_DIM, EMBED_DIM * sizeof(float));     // K: [32:64]
-        memcpy(v_dst, src + 2 * EMBED_DIM, EMBED_DIM * sizeof(float)); // V: [64:96]
+        float* q_dst = &q_buffer[i * NUM_HEADS * HEAD_DIM];
+        float* k_dst = &k_buffer[i * NUM_HEADS * HEAD_DIM];
+        float* v_dst = &v_buffer[i * NUM_HEADS * HEAD_DIM];
+        memcpy(q_dst, src, NUM_HEADS * HEAD_DIM * sizeof(float));                        // Q: [0:96]
+        memcpy(k_dst, src + NUM_HEADS * HEAD_DIM, NUM_HEADS * HEAD_DIM * sizeof(float)); // K: [96:192]
+        memcpy(v_dst, src + 2 * NUM_HEADS * HEAD_DIM, NUM_HEADS * HEAD_DIM * sizeof(float)); // V: [192:288]
     }
     
     printf("      Q CLS: ");
@@ -103,6 +103,7 @@ void attention_forward(const float* x, const AttentionWeights* weights, float* y
         print_attention_debug("", &q_buffer[0 * EMBED_DIM + h * HEAD_DIM], 10);
         
         // For each head, extract the head-specific portion from each token
+        // Q, K, V each have NUM_HEADS * HEAD_DIM elements per token
         // Head h uses dimensions [h * HEAD_DIM, (h+1) * HEAD_DIM)
         
         // Allocate temporary buffers for this head
@@ -113,9 +114,9 @@ void attention_forward(const float* x, const AttentionWeights* weights, float* y
         
         // Extract head-specific Q, K, V for all tokens
         for (int t = 0; t < num_tokens; ++t) {
-            const float* q_token = &q_buffer[t * EMBED_DIM + h * HEAD_DIM];
-            const float* k_token = &k_buffer[t * EMBED_DIM + h * HEAD_DIM];
-            const float* v_token = &v_buffer[t * EMBED_DIM + h * HEAD_DIM];
+            const float* q_token = &q_buffer[t * NUM_HEADS * HEAD_DIM + h * HEAD_DIM];
+            const float* k_token = &k_buffer[t * NUM_HEADS * HEAD_DIM + h * HEAD_DIM];
+            const float* v_token = &v_buffer[t * NUM_HEADS * HEAD_DIM + h * HEAD_DIM];
             
             memcpy(&q_head[t * HEAD_DIM], q_token, HEAD_DIM * sizeof(float));
             memcpy(&k_head[t * HEAD_DIM], k_token, HEAD_DIM * sizeof(float));
