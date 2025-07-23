@@ -13,7 +13,7 @@ typedef struct {
     
     // For creating Q, K, V from input tokens
     float* qkv_weights; // Shape: (3 * EMBED_DIM, EMBED_DIM)
-    float* qkv_bias;    // Shape: (3 * EMBED_DIM) = 96
+    float* qkv_bias;    // Shape: (3 * NUM_HEADS * HEAD_DIM) = 288
 
     // For projecting the concatenated head outputs
     float* proj_weights; // Shape: (EMBED_DIM, NUM_HEADS * HEAD_DIM) = (32, 96)

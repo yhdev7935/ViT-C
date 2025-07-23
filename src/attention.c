@@ -34,20 +34,7 @@ void attention_forward(const float* x, const AttentionWeights* weights, float* y
     float* attn_scores = (float*)malloc(NUM_HEADS * num_tokens * num_tokens * sizeof(float));
     float* attn_output_buffer = (float*)malloc(num_tokens * EMBED_DIM * sizeof(float));
 
-    printf("\n      === C ATTENTION DEBUG ===\n");
-    printf("      Input CLS: ");
-    print_attention_debug("", x, 10);
-    
-    printf("      QKV weight first 10: ");
-    print_attention_debug("", weights->qkv_weights, 10);
-    printf("      QKV bias first 10: ");
-    print_attention_debug("", weights->qkv_bias, 10);
-    // LayerNorm weights should now load correctly with fixed proj_weights size
-    
-    printf("      LayerNorm weight first 10: ");
-    print_attention_debug("", weights->norm_weights, 10);
-    printf("      LayerNorm bias first 10: ");
-    print_attention_debug("", weights->norm_bias, 10);
+    // Debug output removed for cleaner code
 
     // 0. Apply LayerNorm first (Pre-LN structure, matches notebook)
     for (int i = 0; i < num_tokens; ++i) {
@@ -68,14 +55,14 @@ void attention_forward(const float* x, const AttentionWeights* weights, float* y
     
     printf("      QKV CLS: ");
     print_attention_debug("", qkv_buffer, 10);
-    printf("      DEBUG: qkv_dim=%d, EMBED_DIM=%d, expected_qkv_dim=%d\n", qkv_dim, EMBED_DIM, 3*EMBED_DIM);
-    printf("      DEBUG: QKV[32:42] (should be K): ");
-    print_attention_debug("", &qkv_buffer[32], 10);
-    printf("      DEBUG: QKV[64:74] (should be V): ");
-    print_attention_debug("", &qkv_buffer[64], 10);
+    printf("      DEBUG: qkv_dim=%d, NUM_HEADS*HEAD_DIM=%d, total_inner_dim=%d\n", qkv_dim, NUM_HEADS*HEAD_DIM, 3*NUM_HEADS*HEAD_DIM);
+    printf("      DEBUG: QKV[96:106] (should be K): ");
+    print_attention_debug("", &qkv_buffer[96], 10);
+    printf("      DEBUG: QKV[192:202] (should be V): ");
+    print_attention_debug("", &qkv_buffer[192], 10);
     
     // 2. Split QKV into separate Q, K, V tensors  
-    // Python uses chunk(3, dim=-1): simple consecutive split [0:32], [32:64], [64:96]
+    // Python uses chunk(3, dim=-1): split [0:96], [96:192], [192:288]
     for (int i = 0; i < num_tokens; ++i) {
         const float* src = &qkv_buffer[i * qkv_dim];
         float* q_dst = &q_buffer[i * NUM_HEADS * HEAD_DIM];
@@ -98,9 +85,9 @@ void attention_forward(const float* x, const AttentionWeights* weights, float* y
 
     // Process each head in parallel (conceptually)
     for (int h = 0; h < NUM_HEADS; ++h) {
-        printf("      DEBUG: Processing head %d, accessing q_buffer[%d:%d]\n", h, 0 * EMBED_DIM + h * HEAD_DIM, 0 * EMBED_DIM + h * HEAD_DIM + HEAD_DIM - 1);
+        printf("      DEBUG: Processing head %d, accessing q_buffer[%d:%d]\n", h, 0 * NUM_HEADS * HEAD_DIM + h * HEAD_DIM, 0 * NUM_HEADS * HEAD_DIM + h * HEAD_DIM + HEAD_DIM - 1);
         printf("      Q head %d CLS: ", h);
-        print_attention_debug("", &q_buffer[0 * EMBED_DIM + h * HEAD_DIM], 10);
+        print_attention_debug("", &q_buffer[0 * NUM_HEADS * HEAD_DIM + h * HEAD_DIM], 10);
         
         // For each head, extract the head-specific portion from each token
         // Q, K, V each have NUM_HEADS * HEAD_DIM elements per token
@@ -135,19 +122,29 @@ void attention_forward(const float* x, const AttentionWeights* weights, float* y
 
         // Scale the scores
         const float scale = 1.0f / sqrtf((float)HEAD_DIM);
+        if (h == 0) printf("      Scale factor: %f\n", scale);
         for (int i = 0; i < num_tokens * num_tokens; ++i) {
             attn_scores_head[i] *= scale;
         }
+        
+        if (h == 0) printf("      First attention score [CLS,CLS] for head 0: %f\n", attn_scores_head[0]);
 
         // 4. Apply Softmax to scores for each token (row-wise)
         for (int i = 0; i < num_tokens; ++i) {
             softmax(&attn_scores_head[i * num_tokens], num_tokens);
         }
+        
+        if (h == 0) printf("      After softmax [CLS,CLS] for head 0: %f\n", attn_scores_head[0]);
 
         // 5. Multiply scores by V: Attn(Q,K,V) = softmax(Q*K^T/sqrt(d_k)) * V
         // attn_scores_head: [num_tokens, num_tokens], v_head: [num_tokens, HEAD_DIM] -> Result: [num_tokens, HEAD_DIM]
         float* head_output = (float*)malloc(num_tokens * HEAD_DIM * sizeof(float));
         matmul(attn_scores_head, v_head, head_output, num_tokens, HEAD_DIM, num_tokens);
+        
+        if (h == 0) {
+            printf("      After attention*V head 0 CLS first 10: ");
+            print_attention_debug("", head_output, 10);
+        }
 
         // 6. Copy head output to the corresponding position in the final attention output
         for (int t = 0; t < num_tokens; ++t) {
@@ -166,6 +163,11 @@ void attention_forward(const float* x, const AttentionWeights* weights, float* y
     
     printf("      Multi-head concat CLS: ");
     print_attention_debug("", attn_output_buffer, 10);
+    
+    printf("      Proj weight first 10: ");
+    print_attention_debug("", weights->proj_weights, 10);
+    printf("      Proj bias first 10: ");
+    print_attention_debug("", weights->proj_bias, 10);
     
     // 6. Apply final projection
     // The outputs from each head are now concatenated in attn_output_buffer.

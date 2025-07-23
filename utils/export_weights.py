@@ -103,8 +103,8 @@ def export_weights():
             write_tensor(attention.to_qkv.weight, f'qkv_weights_{i}')
             
             # QKV bias (pv_pytorch PlantVIT doesn't use bias for QKV, write zeros)
-            # Match C expectation: 3 * EMBED_DIM = 3 * 32 = 96
-            qkv_bias_size = 3 * config['hidden_dim']  # 3 * 32 = 96
+            # Match C expectation: 3 * NUM_HEADS * HEAD_DIM = 3 * 3 * 32 = 288
+            qkv_bias_size = 3 * config['heads'] * config['dim_head']  # 3 * 3 * 32 = 288
             zeros = np.zeros(qkv_bias_size, dtype=np.float32)
             print(f"  - Writing dummy qkv_bias (zeros) with shape {zeros.shape}")
             f.write(zeros.tobytes())

@@ -272,6 +272,9 @@ def test_python_inference():
         out = out.transpose(1, 2).contiguous().view(b, n, -1)
         print(f"        Multi-head concat CLS first 10: {out[0, 0, :10].tolist()}")
         
+        print(f"        Proj weight first 10: {self.to_out[0].weight.flatten()[:10].tolist()}")
+        print(f"        Proj bias first 10: {self.to_out[0].bias[:10].tolist()}")
+        
         # Apply output projection
         out = self.to_out[0](out)
         print(f"        Final projection CLS first 10: {out[0, 0, :10].tolist()}")
