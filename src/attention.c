@@ -32,7 +32,7 @@ void attention_forward(const float* x, const AttentionWeights* weights, float* y
     float* k_buffer = (float*)malloc(num_tokens * NUM_HEADS * HEAD_DIM * sizeof(float));
     float* v_buffer = (float*)malloc(num_tokens * NUM_HEADS * HEAD_DIM * sizeof(float));
     float* attn_scores = (float*)malloc(NUM_HEADS * num_tokens * num_tokens * sizeof(float));
-    float* attn_output_buffer = (float*)malloc(num_tokens * EMBED_DIM * sizeof(float));
+    float* attn_output_buffer = (float*)malloc(num_tokens * NUM_HEADS * HEAD_DIM * sizeof(float));
 
     // Debug output removed for cleaner code
 
@@ -50,7 +50,8 @@ void attention_forward(const float* x, const AttentionWeights* weights, float* y
     for (int i = 0; i < num_tokens; ++i) {
         const float* token_input = &norm_output[i * EMBED_DIM];  // Use normalized input
         float* token_output = &qkv_buffer[i * qkv_dim];
-        linear(token_input, weights->qkv_weights, weights->qkv_bias, token_output, EMBED_DIM, qkv_dim);
+        // [수정] QKV bias는 실제로 사용하지 않으므로 NULL 전달
+        linear(token_input, weights->qkv_weights, NULL, token_output, EMBED_DIM, qkv_dim);
     }
     
     printf("      QKV CLS: ");
@@ -81,7 +82,7 @@ void attention_forward(const float* x, const AttentionWeights* weights, float* y
     print_attention_debug("", v_buffer, 10);
 
     // Initialize attention output buffer to zero
-    memset(attn_output_buffer, 0, num_tokens * EMBED_DIM * sizeof(float));
+    memset(attn_output_buffer, 0, num_tokens * NUM_HEADS * HEAD_DIM * sizeof(float));
 
     // Process each head in parallel (conceptually)
     for (int h = 0; h < NUM_HEADS; ++h) {
@@ -148,7 +149,7 @@ void attention_forward(const float* x, const AttentionWeights* weights, float* y
 
         // 6. Copy head output to the corresponding position in the final attention output
         for (int t = 0; t < num_tokens; ++t) {
-            float* output_token = &attn_output_buffer[t * EMBED_DIM + h * HEAD_DIM];
+            float* output_token = &attn_output_buffer[t * NUM_HEADS * HEAD_DIM + h * HEAD_DIM];
             const float* head_token = &head_output[t * HEAD_DIM];
             memcpy(output_token, head_token, HEAD_DIM * sizeof(float));
         }
@@ -173,9 +174,10 @@ void attention_forward(const float* x, const AttentionWeights* weights, float* y
     // The outputs from each head are now concatenated in attn_output_buffer.
     // We now apply the final linear layer to the entire result.
     for (int i = 0; i < num_tokens; ++i) {
-        const float* token_input = &attn_output_buffer[i * EMBED_DIM];
+        const float* token_input = &attn_output_buffer[i * NUM_HEADS * HEAD_DIM];
         float* token_output = &y[i * EMBED_DIM];
-        linear(token_input, weights->proj_weights, weights->proj_bias, token_output, EMBED_DIM, EMBED_DIM);
+        // [수정] in_dim = NUM_HEADS * HEAD_DIM, out_dim = EMBED_DIM
+        linear(token_input, weights->proj_weights, weights->proj_bias, token_output, NUM_HEADS * HEAD_DIM, EMBED_DIM);
     }
     
     printf("      Final projection CLS: ");

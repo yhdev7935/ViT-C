@@ -1,0 +1,214 @@
+--- PlantVIT Pure C Inference ---
+Image Size: 256x256, Patch Size: 32x32, Classes: 10
+Embed Dim: 32, Blocks: 3, Heads: 3, MLP Dim: 16
+Allocating model buffers...
+Model buffers allocated successfully!
+Loading PlantVIT weights from vit_weights.bin...
+--- Loading Patch Embedding ---
+  - Loaded patch_ln1_w: 3072 elements
+  - Loaded patch_ln1_b: 3072 elements
+  - Loaded patch_linear_w: 98304 elements
+  - Loaded patch_linear_b: 32 elements
+  - Loaded patch_ln2_w: 32 elements
+  - Loaded patch_ln2_b: 32 elements
+--- Loading Position Embedding & CLS Token ---
+  - Loaded pos_embed: 2080 elements
+  - Loaded cls_token: 32 elements
+--- Loading Transformer Blocks ---
+  Block 0:
+  - Loaded qkv_weights: 9216 elements
+  - Loaded qkv_bias: 288 elements
+  - Loaded proj_weights: 3072 elements
+  - Loaded proj_bias: 32 elements
+  - Loaded mlp_fc1_weights: 512 elements
+  - Loaded mlp_fc1_bias: 16 elements
+  - Loaded mlp_fc2_weights: 512 elements
+  - Loaded mlp_fc2_bias: 32 elements
+  - Loaded attention_norm_weights: 32 elements
+  - Loaded attention_norm_bias: 32 elements
+  - Loaded mlp_norm_weights: 32 elements
+  - Loaded mlp_norm_bias: 32 elements
+  Block 1:
+  - Loaded qkv_weights: 9216 elements
+  - Loaded qkv_bias: 288 elements
+  - Loaded proj_weights: 3072 elements
+  - Loaded proj_bias: 32 elements
+  - Loaded mlp_fc1_weights: 512 elements
+  - Loaded mlp_fc1_bias: 16 elements
+  - Loaded mlp_fc2_weights: 512 elements
+  - Loaded mlp_fc2_bias: 32 elements
+  - Loaded attention_norm_weights: 32 elements
+  - Loaded attention_norm_bias: 32 elements
+  - Loaded mlp_norm_weights: 32 elements
+  - Loaded mlp_norm_bias: 32 elements
+  Block 2:
+  - Loaded qkv_weights: 9216 elements
+  - Loaded qkv_bias: 288 elements
+  - Loaded proj_weights: 3072 elements
+  - Loaded proj_bias: 32 elements
+  - Loaded mlp_fc1_weights: 512 elements
+  - Loaded mlp_fc1_bias: 16 elements
+  - Loaded mlp_fc2_weights: 512 elements
+  - Loaded mlp_fc2_bias: 32 elements
+  - Loaded attention_norm_weights: 32 elements
+  - Loaded attention_norm_bias: 32 elements
+  - Loaded mlp_norm_weights: 32 elements
+  - Loaded mlp_norm_bias: 32 elements
+--- Loading Final Layers ---
+  - Loaded final_norm_weight: 32 elements
+  - Loaded final_norm_bias: 32 elements
+  - Loaded head_weights: 320 elements
+  - Loaded head_bias: 10 elements
+Weight loading completed successfully!
+
+=== Image Processing ===
+Loading image: test_tomato.jpg
+Original image: 256x256 with 3 channels
+Resizing image to 256x256
+Converting to CHW format and normalizing to [0,1]
+
+=== Running PlantVIT Inference ===
+
+=== 🔧 C STEP-BY-STEP DEBUG ===
+
+--- STEP 1: Patch Extraction ---
+Patches shape: [1, 64, 3072]
+First patch first 10 values: [0.501961, 0.474510, 0.486275, 0.372549, 0.345098, 0.356863, 0.541176, 0.513726, 0.525490, 0.419608]
+First patch stats: mean=0.429761, std=0.047814
+
+--- STEP 2: Patch Embedding ---
+        LayerNorm debug: mean=-0.020546, variance=1.196558, eps=0.00000100
+        sqrt(variance + eps)=1.093873, inv_stddev=0.914183
+Patch embedding shape: [1, 64, 32]
+DEBUG: patch_linear_w first 10:  first 10 values: [0.024300, 0.019537, 0.010394, 0.018339, -0.009810, 0.010736, 0.016010, 0.004086, -0.008876, 0.024644]
+ stats: mean=0.010936, std=0.011795
+DEBUG: patch_linear_b first 10:  first 10 values: [-0.019003, -0.014670, -0.002459, 0.008323, 0.001822, 0.020853, 0.010514, 0.011072, -0.001234, 0.028383]
+ stats: mean=0.004360, std=0.013928
+First token first 10 values: [1.196228, -0.615423, -0.093992, 0.590953, 2.323826, 0.942120, 1.061848, -0.023830, 0.726596, -0.628318]
+First token stats: mean=-0.000331, std=1.029149
+
+--- STEP 3: Add CLS Token ---
+After CLS token shape: [1, 65, 32]
+CLS token first 10 values: [-0.847661, -0.910279, 0.010622, 0.306867, -1.210119, 0.485040, -0.623877, 2.129983, -2.257163, -0.876373]
+CLS token stats: mean=-0.245228, std=0.961072
+
+--- STEP 4: Add Position Embedding ---
+After position embedding shape: [1, 65, 32]
+CLS token after pos_embed first 10 values: [-1.473460, -0.422745, 1.487977, -0.585835, 1.406947, -0.135386, -1.056561, 3.255628, -2.547652, -0.793942]
+CLS token after pos_embed stats: mean=-0.238550, std=1.324403
+First patch token after pos_embed first 10 values: [2.037917, -1.180683, -2.461479, -1.178468, 2.459432, 0.728485, -0.009950, 0.257840, 0.719089, -1.145259]
+First patch token after pos_embed stats: mean=-0.191923, std=1.522764
+
+--- STEP 5: Transformer Blocks ---
+
+  Block 0:
+      After LayerNorm CLS:  first 10 values: [-0.976680, -0.156545, 1.399931, -0.259446, 1.302532, 0.080132, -0.606827, 2.745547, -1.809590, -0.447370]
+      QKV CLS:  first 10 values: [0.550588, 2.525670, -0.859814, -0.632186, 0.055618, -1.551657, -1.059530, -0.564112, -0.110394, 1.561605]
+      DEBUG: qkv_dim=288, NUM_HEADS*HEAD_DIM=96, total_inner_dim=288
+      DEBUG: QKV[96:106] (should be K):  first 10 values: [-0.893200, 0.287103, -0.331093, -0.454309, 0.894761, 0.469457, 0.323792, 1.121636, -0.097304, -0.843809]
+      DEBUG: QKV[192:202] (should be V):  first 10 values: [0.023785, 0.746723, 0.915172, 0.741697, -0.627983, 0.409199, 0.017639, 0.682633, 0.742997, 0.176085]
+      Q CLS:  first 10 values: [0.550588, 2.525670, -0.859814, -0.632186, 0.055618, -1.551657, -1.059530, -0.564112, -0.110394, 1.561605]
+      K CLS:  first 10 values: [-0.893200, 0.287103, -0.331093, -0.454309, 0.894761, 0.469457, 0.323792, 1.121636, -0.097304, -0.843809]
+      V CLS:  first 10 values: [0.023785, 0.746723, 0.915172, 0.741697, -0.627983, 0.409199, 0.017639, 0.682633, 0.742997, 0.176085]
+      DEBUG: Processing head 0, accessing q_buffer[0:31]
+      Q head 0 CLS:  first 10 values: [0.550588, 2.525670, -0.859814, -0.632186, 0.055618, -1.551657, -1.059530, -0.564112, -0.110394, 1.561605]
+      Scale factor: 0.176777
+      First attention score [CLS,CLS] for head 0: -1.086303
+      After softmax [CLS,CLS] for head 0: 0.001897
+      After attention*V head 0 CLS first 10:  first 10 values: [-0.778434, 0.719513, 0.446842, 0.157896, -0.633571, -0.655600, -0.171251, -0.404582, -0.257623, -0.023291]
+      DEBUG: Processing head 1, accessing q_buffer[32:63]
+      Q head 1 CLS:  first 10 values: [-0.482257, 0.790751, -0.643135, -0.284512, 0.608599, -0.141214, -2.399746, 0.766321, 1.912360, -0.546960]
+      DEBUG: Processing head 2, accessing q_buffer[64:95]
+      Q head 2 CLS:  first 10 values: [0.368665, -1.378278, -1.016607, 1.095873, -1.160268, -0.772552, -0.152091, 1.699825, 0.717227, 1.080544]
+      Multi-head concat CLS:  first 10 values: [-0.778434, 0.719513, 0.446842, 0.157896, -0.633571, -0.655600, -0.171251, -0.404582, -0.257623, -0.023291]
+      Proj weight first 10:  first 10 values: [-0.047460, -0.095582, -0.018651, -0.035747, 0.089388, -0.027250, -0.019957, -0.094801, 0.074032, -0.001294]
+      Proj bias first 10:  first 10 values: [0.095741, 0.016072, -0.052732, 0.078867, 0.007529, -0.024774, 0.099957, -0.013119, -0.077629, 0.066875]
+      Final projection CLS:  first 10 values: [0.189655, 0.690283, -1.252818, 0.345824, -0.130204, 0.201891, 0.308044, -0.812749, 0.260840, -0.166320]
+    After attention: CLS first 10 values: [-1.283805, 0.267538, 0.235159, -0.240011, 1.276743, 0.066505, -0.748517, 2.442879, -2.286812, -0.960261]
+CLS stats: mean=-0.277495, std=1.055040
+    After feedforward: CLS first 10 values: [-0.768733, -0.337853, -0.255336, -0.740544, 1.107816, 0.246920, -0.407415, 2.179684, -1.769718, -1.075667]
+CLS stats: mean=-0.224495, std=0.875327
+
+  Block 1:
+      After LayerNorm CLS:  first 10 values: [-0.637367, -0.122228, -0.036347, -0.639735, 1.605051, 0.563730, -0.219689, 2.836358, -1.893518, -0.988237]
+      QKV CLS:  first 10 values: [-1.879825, 0.926879, -0.795758, 1.063545, 0.712900, -1.193418, -0.282312, -0.582289, -0.078817, 0.617770]
+      DEBUG: qkv_dim=288, NUM_HEADS*HEAD_DIM=96, total_inner_dim=288
+      DEBUG: QKV[96:106] (should be K):  first 10 values: [0.232560, 0.819144, 0.364378, 0.333769, -0.307295, 0.536628, -0.107725, 1.301946, 0.878103, -0.131465]
+      DEBUG: QKV[192:202] (should be V):  first 10 values: [0.640175, 0.201824, -0.873440, -0.051302, -0.109902, 0.267919, -0.139152, -0.413902, -1.116277, -1.451195]
+      Q CLS:  first 10 values: [-1.879825, 0.926879, -0.795758, 1.063545, 0.712900, -1.193418, -0.282312, -0.582289, -0.078817, 0.617770]
+      K CLS:  first 10 values: [0.232560, 0.819144, 0.364378, 0.333769, -0.307295, 0.536628, -0.107725, 1.301946, 0.878103, -0.131465]
+      V CLS:  first 10 values: [0.640175, 0.201824, -0.873440, -0.051302, -0.109902, 0.267919, -0.139152, -0.413902, -1.116277, -1.451195]
+      DEBUG: Processing head 0, accessing q_buffer[0:31]
+      Q head 0 CLS:  first 10 values: [-1.879825, 0.926879, -0.795758, 1.063545, 0.712900, -1.193418, -0.282312, -0.582289, -0.078817, 0.617770]
+      Scale factor: 0.176777
+      First attention score [CLS,CLS] for head 0: -1.664537
+      After softmax [CLS,CLS] for head 0: 0.000679
+      After attention*V head 0 CLS first 10:  first 10 values: [0.512210, 0.481639, 0.001136, 0.323374, 0.047281, -0.123492, 0.225708, 0.456131, 0.721392, -0.210791]
+      DEBUG: Processing head 1, accessing q_buffer[32:63]
+      Q head 1 CLS:  first 10 values: [0.632806, 0.540927, 0.745837, -1.398645, -0.746886, -1.327123, -1.023094, -0.643294, 1.254476, -1.492997]
+      DEBUG: Processing head 2, accessing q_buffer[64:95]
+      Q head 2 CLS:  first 10 values: [0.683921, -0.594963, -0.258470, 1.644559, 1.242508, -1.291047, -1.636830, 0.696852, -0.703012, 0.624674]
+      Multi-head concat CLS:  first 10 values: [0.512210, 0.481639, 0.001136, 0.323374, 0.047281, -0.123492, 0.225708, 0.456131, 0.721392, -0.210791]
+      Proj weight first 10:  first 10 values: [0.093477, -0.099278, 0.076254, -0.043373, -0.054840, -0.027769, 0.043386, -0.039556, 0.024933, -0.014926]
+      Proj bias first 10:  first 10 values: [-0.092842, -0.025442, -0.001845, 0.036692, 0.042608, 0.021016, -0.019808, 0.035753, -0.063653, 0.001950]
+      Final projection CLS:  first 10 values: [-0.270508, 0.055450, 0.006578, 0.563039, -0.236554, -0.072132, 0.092669, -1.311441, 0.808814, -0.147511]
+    After attention: CLS first 10 values: [-1.039241, -0.282403, -0.248758, -0.177506, 0.871263, 0.174788, -0.314746, 0.868244, -0.960904, -1.223178]
+CLS stats: mean=-0.241170, std=0.583079
+    After feedforward: CLS first 10 values: [-1.074417, -0.555950, -0.295540, 0.301444, 0.788824, 0.095553, -0.067634, 0.603030, -0.833813, -0.741084]
+CLS stats: mean=-0.233292, std=0.541483
+
+  Block 2:
+      After LayerNorm CLS:  first 10 values: [-1.618248, -0.651623, -0.113859, 1.007820, 1.959735, 0.632212, 0.283764, 1.580715, -1.160161, -0.946843]
+      QKV CLS:  first 10 values: [-0.017714, -1.080542, -0.563443, -0.040494, 0.137872, -0.875007, 0.501859, -0.954058, 0.273383, 0.418907]
+      DEBUG: qkv_dim=288, NUM_HEADS*HEAD_DIM=96, total_inner_dim=288
+      DEBUG: QKV[96:106] (should be K):  first 10 values: [-0.730645, 0.237632, 0.000728, -0.143461, -0.467017, -0.719936, -0.383203, -0.503739, -0.027210, 0.363903]
+      DEBUG: QKV[192:202] (should be V):  first 10 values: [0.495888, -0.196646, 0.280013, -0.595584, -0.017098, -0.764186, -0.230330, 0.710529, -0.424355, -0.748897]
+      Q CLS:  first 10 values: [-0.017714, -1.080542, -0.563443, -0.040494, 0.137872, -0.875007, 0.501859, -0.954058, 0.273383, 0.418907]
+      K CLS:  first 10 values: [-0.730645, 0.237632, 0.000728, -0.143461, -0.467017, -0.719936, -0.383203, -0.503739, -0.027210, 0.363903]
+      V CLS:  first 10 values: [0.495888, -0.196646, 0.280013, -0.595584, -0.017098, -0.764186, -0.230330, 0.710529, -0.424355, -0.748897]
+      DEBUG: Processing head 0, accessing q_buffer[0:31]
+      Q head 0 CLS:  first 10 values: [-0.017714, -1.080542, -0.563443, -0.040494, 0.137872, -0.875007, 0.501859, -0.954058, 0.273383, 0.418907]
+      Scale factor: 0.176777
+      First attention score [CLS,CLS] for head 0: 1.200063
+      After softmax [CLS,CLS] for head 0: 0.027848
+      After attention*V head 0 CLS first 10:  first 10 values: [0.325573, -0.180196, 0.515682, 0.305169, 0.366360, 0.092476, -0.836411, 0.580914, -0.350885, 0.404174]
+      DEBUG: Processing head 1, accessing q_buffer[32:63]
+      Q head 1 CLS:  first 10 values: [-1.081455, -1.861670, -0.125515, -0.378989, -0.511236, 0.338175, 1.141315, 1.742886, 0.205514, 1.845789]
+      DEBUG: Processing head 2, accessing q_buffer[64:95]
+      Q head 2 CLS:  first 10 values: [-0.572479, -0.157366, 1.920804, 1.062530, 0.558244, 1.610014, 0.016622, 1.094847, -0.564201, -0.694548]
+      Multi-head concat CLS:  first 10 values: [0.325573, -0.180196, 0.515682, 0.305169, 0.366360, 0.092476, -0.836411, 0.580914, -0.350885, 0.404174]
+      Proj weight first 10:  first 10 values: [-0.080201, 0.089053, 0.054348, -0.025663, -0.031171, 0.004681, -0.054285, -0.014485, 0.088427, -0.088000]
+      Proj bias first 10:  first 10 values: [0.065690, 0.014403, 0.051835, 0.092697, -0.007710, -0.096314, -0.015370, 0.011462, 0.109203, -0.046552]
+      Final projection CLS:  first 10 values: [0.822857, 0.320973, -0.515351, -0.000772, -0.236525, -0.418740, -0.007215, -1.058036, 0.558418, -0.284126]
+    After attention: CLS first 10 values: [-0.251560, -0.234977, -0.810891, 0.300672, 0.552299, -0.323187, -0.074849, -0.455006, -0.275395, -1.025210]
+CLS stats: mean=-0.261903, std=0.459070
+    After feedforward: CLS first 10 values: [-0.412445, -0.198081, -0.959563, -0.132292, 0.524034, -0.398871, 0.201442, -0.546661, -0.730463, -0.708273]
+CLS stats: mean=-0.288964, std=0.456212
+
+--- STEP 6: Final Layer Norm ---
+After final norm: CLS first 10 values: [-0.281177, 0.172596, -1.571128, 0.394978, 1.916431, -0.271280, 1.225874, -0.567314, -1.041784, -1.016408]
+After final norm: CLS stats: mean=-0.000174, std=1.100609
+
+--- STEP 7: Classification Head ---
+Final logits: [-1.257699, 0.136808, 0.254354, 1.941850, 3.040716, 1.556301, -1.667757, -0.521755, 0.614020, -1.174983]
+Logits stats: mean=0.292186, std=1.451260
+Forward pass completed successfully!
+
+=== Tomato Disease Classification Results ===
+  Bacterial_spot: -1.257699
+  Early_blight: 0.136808
+  Healthy: 0.254354
+  Late_blight: 1.941850
+  Leaf_mold: 3.040716
+  Septoria_leaf_spot: 1.556301
+  Spider_mites: -1.667757
+  Target_spot: -0.521755
+  Tomato_mosaic_virus: 0.614020
+  Yellow_leaf_curl_virus: -1.174983
+
+🌱 DIAGNOSIS RESULT 🌱
+Predicted Disease: Leaf_mold
+Confidence Score: 3.040716
+⚠️  Disease detected! Consider appropriate treatment measures.
+
+PlantVIT inference completed successfully!
